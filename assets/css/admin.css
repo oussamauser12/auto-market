@@ -1,0 +1,109 @@
+/* --- Structure de l'Espace Admin --- */
+body {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f1f3f4;
+}
+
+/* --- Barre Latérale (Sidebar) --- */
+.sidebar {
+    width: 250px;
+    background-color: #0d1b2a; /* Bleu nuit très foncé */
+    color: #ffffff;
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+}
+
+.sidebar h2 {
+    text-align: center;
+    font-size: 1.2rem;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #1b263b;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li a {
+    display: block;
+    padding: 15px 25px;
+    color: #e0e1dd;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.sidebar ul li a:hover {
+    background-color: #1b263b;
+    border-left: 4px solid #415a77;
+    padding-left: 30px;
+}
+
+/* --- Contenu Principal --- */
+.main-content {
+    flex: 1;
+    padding: 30px;
+}
+
+.header-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 15px 30px;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* --- Tableaux de Données (Modération) --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+th {
+    background-color: #1b263b;
+    color: white;
+    text-align: left;
+    padding: 15px;
+}
+
+td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* --- Badges de Statut --- */
+.status {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.status-wait { background: #fff3cd; color: #856404; } /* En attente */
+.status-valid { background: #d4edda; color: #155724; } /* Validé */
+
+/* --- Boutons d'Action --- */
+.btn-action {
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin-right: 5px;
+}
+
+.btn-approve { background-color: #2e7d32; color: white; }
+.btn-delete { background-color: #c62828; color: white; }

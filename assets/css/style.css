@@ -1,0 +1,114 @@
+:root {
+    --primary: #1a237e;    /* Bleu Foncé Royal */
+    --secondary: #3949ab;  /* Bleu Indigo */
+    --accent: #ff5252;     /* Rouge Corail pour les alertes */
+    --background: #f8f9fa; /* Gris très clair */
+    --text: #2c3e50;
+    --white: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--background);
+    color: var(--text);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* --- Navigation Moderne --- */
+header {
+    background: var(--primary);
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+nav a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+}
+
+nav a:hover {
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Grille et Cartes --- */
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.grille-autos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.card {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.25rem;
+    color: var(--primary);
+}
+
+.price-tag {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--secondary);
+    margin: 10px 0;
+}
+
+.badge-info {
+    background: #e8eaf6;
+    color: var(--primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-right: 5px;
+}
+
+/* --- Boutons --- */
+.btn {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: 0.3s;
+    margin-top: auto;
+}
+
+.btn:hover {
+    background: var(--secondary);
+    box-shadow: 0 4px 8px rgba(57, 73, 171, 0.3);
+}
