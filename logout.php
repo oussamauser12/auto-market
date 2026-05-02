@@ -1,10 +1,10 @@
 <?php
-session_start(); // On démarre la session pour pouvoir la détruire
+session_start();
 
-// On vide toutes les variables de session
-$_SESSION = array();
+// Vider toutes les variables de session
+$_SESSION = [];
 
-// On détruit le cookie de session si il existe
+// Détruire le cookie de session
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -13,10 +13,12 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// On détruit la session sur le serveur
+// Détruire la session
 session_destroy();
 
-// Redirection vers la page de connexion
+// Redirection vers login avec chemin absolu
+$base = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+// logout.php est à la racine du projet, donc on redirige simplement
 header("Location: login.php");
 exit();
 ?>

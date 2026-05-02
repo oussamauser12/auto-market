@@ -2,38 +2,47 @@
 session_start();
 require 'config/db.php';
 
+// Si déjà connecté, rediriger directement
+if (isset($_SESSION['user_id'])) {
+    if ($_SESSION['role'] === 1) {
+        header('Location: espace-admin/dashboard.php');
+    } else {
+        header('Location: espace-client/index.php');
+    }
+    exit();
+}
+
 $erreur = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = htmlspecialchars($_POST['email']);
+    $email    = trim($_POST['email']);
     $password = $_POST['password'];
 
-    // Vérification en base de données
-    $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
-
-    // Vérification du mot de passe (Comparaison directe selon ton code actuel)
-    if ($user && $password === $user['password']) {
-        
-        // --- INITIALISATION DE LA SESSION ---
-        $_SESSION['user_id'] = $user['id_user'];
-        $_SESSION['nom'] = $user['nom'];
-        $_SESSION['role'] = (int)$user['role']; // 1 pour Admin, 0 pour Client
-
-        // --- LOGIQUE DE REDIRECTION SELON LE RÔLE ---
-        if ($_SESSION['role'] === 1) {
-            // L'utilisateur est ADMIN -> Direction le Dashboard
-            header('Location: espace-admin/dashboard.php');
-            exit();
-        } else {
-            // L'utilisateur est CLIENT -> Direction son espace personnel
-            header('Location: espace-client/index.php');
-            exit();
-        }
-
+    if (empty($email) || empty($password)) {
+        $erreur = "Veuillez remplir tous les champs.";
     } else {
-        $erreur = "Identifiants incorrects. Veuillez réessayer.";
+        $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && password_verify($password, $user['password'])) {
+
+            // Stocker les infos de session
+            $_SESSION['user_id'] = (int)$user['id_user'];
+            $_SESSION['nom']     = $user['nom'];
+            $_SESSION['role']    = (int)$user['role']; // 0 = client, 1 = admin
+
+            // Redirection selon le rôle
+            if ($_SESSION['role'] === 1) {
+                header('Location: espace-admin/dashboard.php');
+            } else {
+                header('Location: espace-client/index.php');
+            }
+            exit();
+
+        } else {
+            $erreur = "Identifiants incorrects. Veuillez réessayer.";
+        }
     }
 }
 ?>
@@ -43,81 +52,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion | Auto-Market</title>
-    
+    <title>Connexion - Auto-Market</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary: #0f172a;
-            --accent: #3b82f6;
-            --glass-bg: rgba(255, 255, 255, 0.03);
+            --cupra-gold: #c2a37d;
             --glass-border: rgba(255, 255, 255, 0.1);
-            --text-muted: #94a3b8;
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #020617; 
-            color: white;
-            margin: 0;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://media.gqmagazine.fr/photos/5bf402f6923dee70dbcfae9e/16:9/w_2560%2Cc_limit/526140.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            justify-content: center;
+            color: white;
         }
 
         .login-card {
-            width: 100%;
-            max-width: 400px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
+            width: 90%;
+            max-width: 420px;
+            background: rgba(15, 15, 15, 0.65);
+            backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
-            border-radius: 28px;
-            padding: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.6s ease-out;
+            border-radius: 4px;
+            padding: 50px 40px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+            position: relative;
+            animation: fadeUp 0.6s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Ligne cuivrée en haut */
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: var(--cupra-gold);
         }
 
         .logo {
-            text-align: center;
             font-weight: 800;
-            font-size: 1.8rem;
-            letter-spacing: -1px;
-            color: white;
-            margin-bottom: 10px;
-        }
-
-        .logo span { color: var(--accent); }
-
-        p.subtitle {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 3px;
+            color: white;
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .logo span { color: var(--cupra-gold); }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 35px;
+        }
+
+        /* Message d'erreur */
+        .erreur-msg {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            padding: 12px 15px;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: 2px;
+        }
+        .erreur-msg i { margin-right: 6px; }
+
+        /* Formulaire */
+        .form-group { margin-bottom: 22px; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--cupra-gold);
+            margin-bottom: 10px;
+            font-weight: 700;
         }
 
         .input-wrapper {
@@ -128,111 +160,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .input-wrapper i {
             position: absolute;
-            left: 15px;
-            color: var(--text-muted);
+            left: 14px;
+            color: #64748b;
+            font-size: 0.9rem;
+            pointer-events: none;
+            transition: var(--transition);
         }
 
-        input {
+        .input-wrapper input {
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            padding: 14px 15px 14px 45px;
-            border-radius: 14px;
+            border: none;
+            border-bottom: 1px solid var(--glass-border);
             color: white;
+            padding: 13px 15px 13px 42px;
             font-family: inherit;
             font-size: 0.95rem;
-            outline: none;
             transition: var(--transition);
-            box-sizing: border-box;
         }
 
-        input:focus {
-            border-color: var(--accent);
+        .input-wrapper input:focus {
             background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            border-bottom-color: var(--cupra-gold);
+            outline: none;
         }
 
-        .btn-login {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
+        .input-wrapper input::placeholder { color: #475569; }
+
+        /* Bouton */
+        .btn-submit {
             width: 100%;
-            margin-top: 15px;
+            background: var(--cupra-gold);
+            color: #000;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            padding: 16px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
             transition: var(--transition);
+            font-family: inherit;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .btn-login:hover {
-            background: #2563eb;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+        .btn-submit:hover {
+            opacity: 0.88;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(194, 163, 125, 0.25);
         }
 
         .footer-text {
             text-align: center;
-            margin-top: 25px;
+            margin-top: 28px;
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: #64748b;
         }
 
         .footer-text a {
-            color: var(--accent);
+            color: var(--cupra-gold);
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        .erreur-msg {
-            background: rgba(239, 68, 68, 0.1);
-            color: #fca5a5;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            text-align: center;
-            margin-bottom: 20px;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
+        .footer-text a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
 <div class="login-card">
-    <div class="logo">AUTO<span>.</span>MARKET</div>
-    <p class="subtitle">Ravi de vous revoir ! Connectez-vous.</p>
 
-    <?php if(!empty($erreur)): ?>
+    <div class="logo">AUTO<span>.</span>MARKET</div>
+    <p class="subtitle">Expérimentez la performance.</p>
+
+    <?php if (!empty($erreur)): ?>
         <div class="erreur-msg">
-            <i class="fas fa-exclamation-circle"></i> <?= $erreur ?>
+            <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($erreur) ?>
         </div>
     <?php endif; ?>
 
-    <form action="" method="POST">
+    <form action="" method="POST" id="loginForm">
+
         <div class="form-group">
-            <label>Adresse Email</label>
+            <label for="email">Adresse Email</label>
             <div class="input-wrapper">
                 <i class="fas fa-envelope"></i>
-                <input type="email" name="email" placeholder="nom@exemple.com" required>
+                <input type="email" id="email" name="email"
+                       placeholder="nom@exemple.com"
+                       value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
+                       required>
             </div>
         </div>
 
         <div class="form-group">
-            <label>Mot de passe</label>
+            <label for="password">Mot de passe</label>
             <div class="input-wrapper">
                 <i class="fas fa-lock"></i>
-                <input type="password" name="password" placeholder="••••••••" required>
+                <input type="password" id="password" name="password"
+                       placeholder="••••••••" required>
             </div>
         </div>
 
-        <button type="submit" class="btn-login">Se connecter</button>
+        <button type="submit" class="btn-submit" id="submitBtn">
+            <i class="fas fa-arrow-right-to-bracket"></i> Se connecter
+        </button>
+
     </form>
 
     <div class="footer-text">
-        Pas encore de compte ? <a href="register.php">Créer un compte</a>
+        Nouveau ici ? <a href="register.php">Créer un compte</a>
     </div>
+
 </div>
+
+<script>
+    // Icône change de couleur au focus
+    document.querySelectorAll('.input-wrapper input').forEach(input => {
+        const icon = input.previousElementSibling;
+        input.addEventListener('focus', () => icon.style.color = 'var(--cupra-gold)');
+        input.addEventListener('blur',  () => icon.style.color = '#64748b');
+    });
+
+    // Feedback visuel lors de la soumission
+    document.getElementById('loginForm').addEventListener('submit', function () {
+        const btn = document.getElementById('submitBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ACCÈS EN COURS...';
+        btn.style.opacity = '0.7';
+        btn.disabled = true;
+    });
+</script>
 
 </body>
 </html>

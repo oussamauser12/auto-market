@@ -2,6 +2,12 @@
 session_start();
 require '../config/db.php';
 
+// Sécurité : Vérifier si l'utilisateur est admin
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 1) {
+    header('Location: ../login.php');
+    exit();
+}
+
 // 1. Récupération de TOUTES les annonces en attente avec LEFT JOIN pour éviter les lignes masquées
 $query = "SELECT a.*, v.*, m.nom_modele, ma.nom_marque, u.nom, u.prenom 
           FROM annonces a 

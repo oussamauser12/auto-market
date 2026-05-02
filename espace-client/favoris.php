@@ -9,9 +9,9 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// REQUÊTE CORRIGÉE
+// REQUÊTE CONSERVÉE
 $query = "SELECT a.*, v.*, m.nom_modele, ma.nom_marque, u.ville as ville_vendeur, 
-                 MIN(p.chemin_url) as chemin_url, f.date_ajout
+                  MIN(p.chemin_url) as chemin_url, f.date_ajout
           FROM favoris f
           JOIN annonces a ON f.id_annonce = a.id_annonce
           JOIN vehicules v ON a.id_vehicule = v.id_vehicule 
@@ -33,94 +33,193 @@ $favoris = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes Favoris | Auto-Market</title>
+    <title>Mes Favoris | Auto-Market Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #0f172a; --accent: #3b82f6; --bg: #f8fafc;
-            --card-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
-            --radius: 16px; --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --cupra-dark: #050b14;
+            --cupra-carbon: #0d121a;
+            --cupra-copper: #c2a37d;
+            --text-gray: #94a3b8;
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding-top: 100px; }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--cupra-dark); 
+            color: #ffffff; 
+            margin: 0; 
+            padding-top: 120px; 
+            overflow-x: hidden;
+        }
         
-        nav { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); padding: 15px 30px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; border: 1px solid rgba(255, 255, 255, 0.1); }
-        nav .logo { color: white; font-weight: 800; font-size: 1.5rem; text-decoration: none; }
-        nav .links a { color: #cbd5e1; text-decoration: none; margin-left: 25px; font-weight: 600; }
+        /* --- Navigation Style Cupra --- */
+        nav { 
+            position: fixed; 
+            top: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 90%; 
+            max-width: 1200px; 
+            background: rgba(13, 18, 26, 0.8); 
+            backdrop-filter: blur(15px); 
+            padding: 20px 40px; 
+            border-radius: 0; /* Angles vifs Cupra */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 1000; 
+            border: 1px solid rgba(194, 163, 125, 0.2); 
+        }
+        nav .logo { color: #fff; font-weight: 800; font-size: 1.5rem; text-decoration: none; letter-spacing: -1px; }
+        nav .logo span { color: var(--cupra-copper); }
+        nav .links a { color: #cbd5e1; text-decoration: none; margin-left: 25px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        nav .links a:hover { color: var(--cupra-copper); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .header-section { margin-bottom: 40px; }
-        .header-section h1 { font-size: 2.5rem; color: var(--primary); margin: 0; }
         
+        .header-section { margin-bottom: 60px; border-left: 4px solid var(--cupra-copper); padding-left: 25px; }
+        .header-section h1 { font-size: 3rem; font-weight: 800; text-transform: uppercase; letter-spacing: -2px; margin: 0; line-height: 1; }
+        .header-section p { color: var(--text-gray); margin-top: 10px; font-size: 1.1rem; }
+        
+        /* --- Grid & Cards --- */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; margin-bottom: 50px; }
-        .car-card { background: var(--card-bg); border-radius: var(--radius); overflow: hidden; border: 1px solid #f1f5f9; position: relative; transition: var(--transition); }
-        .car-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         
-        .image-wrapper { height: 220px; background: #e2e8f0; position: relative; }
-        .image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .car-card { 
+            background: var(--cupra-carbon); 
+            border-radius: 0; 
+            overflow: hidden; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            position: relative; 
+            transition: var(--transition); 
+        }
+        .car-card:hover { transform: translateY(-10px); border-color: var(--cupra-copper); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
         
-        .price-badge { position: absolute; bottom: 15px; left: 15px; background: white; padding: 8px 15px; border-radius: 12px; font-weight: 800; color: var(--primary); }
+        .image-wrapper { height: 240px; background: #161e2b; position: relative; overflow: hidden; }
+        .image-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 1.5s ease; }
+        .car-card:hover .image-wrapper img { transform: scale(1.1); }
         
-        /* Bouton pour retirer des favoris */
-        .btn-remove { position: absolute; top: 15px; right: 15px; background: #ef4444; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .price-badge { 
+            position: absolute; 
+            bottom: 0; 
+            right: 0; 
+            background: var(--cupra-copper); 
+            padding: 10px 20px; 
+            font-weight: 800; 
+            color: var(--cupra-dark); 
+            font-size: 1.1rem;
+        }
+        
+        /* Bouton suppression moderne */
+        .btn-remove { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            background: rgba(239, 68, 68, 0.9); 
+            width: 40px; 
+            height: 40px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            text-decoration: none; 
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .btn-remove:hover { background: #ef4444; transform: rotate(90deg); }
 
-        .content { padding: 20px; }
-        .specs { display: flex; justify-content: space-between; background: #f8fafc; padding: 10px; border-radius: 12px; margin: 15px 0; font-size: 0.85rem; color: var(--text-muted); }
-        .btn-view { display: block; text-align: center; background: var(--primary); color: white; padding: 12px; text-decoration: none; border-radius: 10px; font-weight: 700; }
+        .content { padding: 30px; }
+        .brand-meta { font-size: 0.7rem; color: var(--cupra-copper); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         
-        .empty-state { text-align: center; padding: 100px 20px; color: var(--text-muted); }
-        .empty-state i { font-size: 4rem; margin-bottom: 20px; color: #e2e8f0; }
+        .specs { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            background: rgba(255,255,255,0.03); 
+            padding: 15px; 
+            margin: 20px 0; 
+            font-size: 0.75rem; 
+            color: var(--text-gray);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .specs span i { color: var(--cupra-copper); margin-right: 5px; }
+
+        .btn-view { 
+            display: block; 
+            text-align: center; 
+            background: transparent; 
+            color: white; 
+            padding: 15px; 
+            text-decoration: none; 
+            border: 1px solid var(--cupra-copper); 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+        .btn-view:hover { background: var(--cupra-copper); color: var(--cupra-dark); }
+        
+        /* Empty State Premium */
+        .empty-state { text-align: center; padding: 120px 20px; border: 1px dashed rgba(194, 163, 125, 0.3); }
+        .empty-state i { font-size: 5rem; margin-bottom: 25px; color: var(--cupra-copper); opacity: 0.3; }
+        .empty-state h2 { font-size: 2rem; text-transform: uppercase; letter-spacing: -1px; }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            h1 { font-size: 2.2rem; }
+        }
     </style>
 </head>
 <body>
 
 <nav>
-    <a href="index.php" class="logo">AUTO.MARKET</a>
+    <a href="index.php" class="logo">AUTO<span>.</span>MARKET</a>
     <div class="links">
         <a href="index.php">Explorer</a>
-        <a href="favoris.php" style="color: var(--accent);">Mes Favoris</a>
-        <a href="profil.php">Mon Garage</a>
+        <a href="favoris.php" style="color: var(--cupra-copper);">Favoris</a>
+        <a href="profil.php">Garage</a>
         <a href="../logout.php" style="color: #ef4444;"><i class="fa-solid fa-power-off"></i></a>
     </div>
 </nav>
 
 <div class="container">
     <div class="header-section">
-        <h1>Mes coups de cœur ❤️</h1>
-        <p>Retrouvez ici toutes les annonces que vous avez sauvegardées.</p>
+        <h1>Mes coups de cœur</h1>
+        <p>Votre sélection exclusive d'automobiles d'exception.</p>
     </div>
 
     <?php if (empty($favoris)): ?>
         <div class="empty-state">
-            <i class="fa-regular fa-heart"></i>
-            <h2>Aucun favori pour le moment</h2>
-            <p>Parcourez les annonces et cliquez sur le cœur pour les retrouver ici.</p>
-            <a href="index.php" class="btn-view" style="display: inline-block; width: auto; padding: 12px 30px; margin-top: 20px;">Explorer les annonces</a>
+            <i class="fa-solid fa-heart-crack"></i>
+            <h2>Votre liste est vide</h2>
+            <p>Le garage de vos rêves commence par une première sélection.</p>
+            <a href="index.php" class="btn-view" style="display: inline-block; width: auto; padding: 15px 40px; margin-top: 30px;">Parcourir le catalogue</a>
         </div>
     <?php else: ?>
         <div class="grid">
             <?php foreach ($favoris as $auto): ?>
             <div class="car-card">
                 <div class="image-wrapper">
-                    <img src="../<?= $auto['chemin_url'] ?? 'assets/img/default-car.jpg' ?>" alt="Car">
+                    <img src="../<?= $auto['chemin_url'] ?? 'assets/img/default-car.jpg' ?>" alt="Car Preview">
                     <div class="price-badge"><?= number_format($auto['prix'], 0, ',', ' ') ?> DH</div>
                     
-                    <a href="ajouter_favoris.php?id=<?= $auto['id_annonce'] ?>" class="btn-remove" title="Retirer des favoris">
-                        <i class="fa-solid fa-trash-can"></i>
+                    <a href="ajouter_favoris.php?id=<?= $auto['id_annonce'] ?>" class="btn-remove" title="Supprimer">
+                        <i class="fa-solid fa-xmark"></i>
                     </a>
                 </div>
 
                 <div class="content">
-                    <div style="font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: uppercase;"><?= $auto['nom_marque'] ?> • <?= $auto['ville_vendeur'] ?></div>
-                    <h3 style="margin: 5px 0; font-size: 1.2rem;"><?= htmlspecialchars($auto['titre']) ?></h3>
+                    <div class="brand-meta"><?= $auto['nom_marque'] ?> • <?= $auto['ville_vendeur'] ?></div>
+                    <h3 style="margin: 0; font-size: 1.4rem; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($auto['titre']) ?></h3>
                     
                     <div class="specs">
-                        <span><i class="fa-solid fa-calendar"></i> <?= $auto['annee'] ?></span>
-                        <span><i class="fa-solid fa-gauge-high"></i> <?= $auto['kilometrage'] ?> km</span>
-                        <span><i class="fa-solid fa-bolt"></i> <?= $auto['carburant'] ?></span>
+                        <span><i class="fa-solid fa-calendar-days"></i> <?= $auto['annee'] ?></span>
+                        <span><i class="fa-solid fa-gauge"></i> <?= number_format($auto['kilometrage'], 0, '.', ' ') ?></span>
+                        <span><i class="fa-solid fa-bolt-lightning"></i> <?= $auto['carburant'] ?></span>
                     </div>
 
-                    <a href="annonce.php?id=<?= $auto['id_annonce'] ?>" class="btn-view">Voir l'annonce</a>
+                    <a href="annonce.php?id=<?= $auto['id_annonce'] ?>" class="btn-view">Détails Véhicule</a>
                 </div>
             </div>
             <?php endforeach; ?>
